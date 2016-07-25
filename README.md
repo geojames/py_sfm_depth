@@ -7,5 +7,5 @@
 > 
 > The academic article supporting the release of this software is currently under review. After the article is accepted for publication the code will be officially released.
 
-A tutorial will also be availible from [the github.io page for theis repository](https://geojames.github.io/py_sfm_depth/)
+A tutorial will also be availible from [the github.io page for this repository](https://geojames.github.io/py_sfm_depth/)
 
