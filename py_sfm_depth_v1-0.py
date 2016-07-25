@@ -221,7 +221,7 @@ def visibility(cam, footprints, targets):
           
     return r_filt
 
-def correction(r,target, slant_d):
+def correction(r,target):
     """Performs the per camera refraction correction on a target point.
     Refer to the documentation for the specifics"""
     
@@ -367,10 +367,10 @@ def main():
             print "Processed %i cameras in %0.2f minutes" %(np.count_nonzero(cams.x),mins_c)
           
         # test the visability of target point based on the camera footprints
-        cam_r, cam_slant_d = visibility(cams,foot_prints,tar)
+        cam_r = visibility(cams,foot_prints,tar)
         
         # perform the refraction correction
-        tar_out, h, percent_water, cam_const, scale = correction(cam_r, tar, cam_slant_d)
+        tar_out = correction(cam_r, tar)
         
         # output - for the first chunk write header row, else append subsequent
         #   chunks without headers
