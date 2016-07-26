@@ -19,10 +19,538 @@
     </section>
 
     <section class="main-content">
-      <h3>
-<a id="welcome-to-the-tutorial-for-py_sfm_depth" class="anchor" href="#welcome-to-the-tutorial-for-py_sfm_depth" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Welcome to the tutorial for py_sfm_depth</h3>
+      <h1>
+<a id="this-page-is-under-construction25-july-2016" class="anchor" href="#this-page-is-under-construction25-july-2016" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>This page is under construction...(25 July 2016)</h1>
 
-<p>This page is under construction...(13 July 2016)</p>
+<h2>
+<a id="welcome-to-the-tutorial-for-py_sfm_depth" class="anchor" href="#welcome-to-the-tutorial-for-py_sfm_depth" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a id="top"></a>Welcome to the tutorial for py_sfm_depth</h2>
+
+<p>If you use this tutorial and the accompanying software, please cite the following paper:</p>
+
+<blockquote>
+<p>Dietrich, James T., 2016. Bathymetric Structure from Motion. Earth Surface Processes and Landforms. DOI: xxx</p>
+</blockquote>
+
+<p>The above article was focused on UAV-based imagery collection, but ground-based should be usable as long as the images do not include the horizon (i.e. the camera is pointing mainly down)</p>
+
+<p>Because this is a long tutorial, I've added some table of contents links throughout for easy navigation between the sections.</p>
+
+<hr>
+
+<p><a href="#top">Top</a> | <a href="#step-1">SfM Collection and Processing</a> | <a href="#step-2">Point Cloud Processing</a> | <a href="#step-3">Data Prep</a> | <a href="#step-4">Running the Script</a></p>
+
+<hr>
+
+<h2>
+<a id="prerequisites" class="anchor" href="#prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prerequisites</h2>
+
+<p>In order to use this this tutorial, you will need:</p>
+
+<ol>
+<li> Optimal site conditions:
+
+<ul>
+<li>  Clear water is first and foremost. High levels of suspended sediment (cloudy water) or tannic conditions (dark brown water) will inhibit the use of SfM to measure depths. The rule is if you can’t see the bottom of the stream, neither can the camera…and that’s going to cause problems.</li>
+<li>  Minimal surface waves. Both wind-driven waves and hydraulic waves (riffles and standing waves) will increase the “noise” in the SFM point cloud. This will lead to inaccuracies/errors in the final outputs.</li>
+<li>  Cloudy, hazy, or smoky weather conditions create a lot of surface reflections on the water with will inhibit accurate measurements.</li>
+</ul>
+</li>
+<li> A Structure from Motion (or other photogrammetry) software package that can:
+
+<ul>
+<li>  Export a georeferenced (or scaled) point cloud dataset</li>
+<li>  Export the calculated camera positions (x,y,z) and orientations (pitch, roll, yaw)</li>
+</ul>
+</li>
+<li> A point cloud/3D data processing software:
+
+<ul>
+<li>  In this tutorial, I will be using my favorite (which is free and offers cross-platform support) – CloudCompare (<a href="http://www.cloudcompare.org">cloudcompare.org</a>)</li>
+</ul>
+</li>
+<li> An installation of Python (<a href="http://www.python.org">python.org</a>) that has a number of libraries installed
+
+<ul>
+<li>I use a scientific python distribution, Anaconda (<a href="https://www.continuum.io/downloads">https://www.continuum.io/downloads</a>), that has most of the needed libraries.
+
+<ul>
+<li>  With the exception of WX, which you can install via CONDA<br>
+<code>conda install -c anaconda wxpython=3.0.0.0</code>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>As with any SfM collection technique, practice is your best friend. <strong>Do not</strong> expect perfect results from the first attempt to correct SfM bathymetry.</li>
+</ol>
+
+<hr>
+
+<p><a href="#top">Top</a> | <a href="#step-1">SfM Collection and Processing</a> | <a href="#step-2">Point Cloud Processing</a> | <a href="#step-3">Data Prep</a> | <a href="#step-4">Running the Script</a></p>
+
+<hr>
+
+<h2>
+<a id="sfm-collection-and-processing" class="anchor" href="#sfm-collection-and-processing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a id="step-1"></a>SfM Collection and Processing</h2>
+
+<h3>
+<a id="collect-imagery-for-your-site" class="anchor" href="#collect-imagery-for-your-site" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Collect imagery for your site</h3>
+
+<p>I’m not going to go into the details here, I’m assuming you have knowledge/experience with imagery collection for SfM.  </p>
+
+<h4>
+<a id="some-tips-for-bathymetric-data-collection" class="anchor" href="#some-tips-for-bathymetric-data-collection" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Some tips for bathymetric data collection:</h4>
+
+<ul>
+<li>  I’ll reiterate, clear water is one of the most important factors and calmer wind conditions are ideal ( i.e. less surface waves).</li>
+<li>  Imagery should be collected at low-oblique angles (~20° off nadir) in convergent, overlapping patterns. Collecting at two heights/altitudes is also advantageous.</li>
+<li>  Using a polarizing filter, adjusted to reduce glare, will help the camera see through the water column to the bottom.</li>
+<li>  As much as possible, keep the sun behind the sensor.</li>
+<li>  Collect images at a time of day that minimizes shadows from the banks/riparian vegetation. Noon sun is not required and it is better to optimize for the site.</li>
+<li>  Accurate ground control points are critical for any SfM collection. RTK-GPS or a Total Station are the recommended survey methods.</li>
+</ul>
+
+<h3>
+<a id="surveying" class="anchor" href="#surveying" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Surveying</h3>
+
+<p>Accurate ground control points are critical for any SfM collection. RTK-GPS or a Total Station are the recommended survey methods.</p>
+
+<ul>
+<li>  Additional surveying requirements:
+
+<ul>
+<li>In-water validation points: 
+
+<ul>
+<li>You should collect a number of validation points (100 is a fairly easy number to reach) at a variety of the depths present in the study area. These are for error checking/error statistics.</li>
+</ul>
+</li>
+<li>Water’s edge points: 
+
+<ul>
+<li>You will need to collect a number of survey points on/at the water’s edge (for establishing the water surface elevations).</li>
+<li>  You can do an extensive survey of the water’s edge (one point every 3-5 meters, plus extras at elevation transitions) or take a samples (one point every 20-30 meters, plus extras at elevation transitions).
+
+<ul>
+<li>Either way you will need a water’s edge points for every part of the stream that where you want to map the bathymetry.</li>
+</ul>
+</li>
+<li>  With sample surveys, you will need to fill in by digitizing points on the water’s edge (more on that later).</li>
+<li>  For streams with steep banks, this will be a challenge. However, surveying is the best option because digitizing the water level on step banks is notoriously difficult.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<h3>
+<a id="processing" class="anchor" href="#processing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Processing</h3>
+
+<p>Go through your software’s processing chain to the point where you have a georeferenced, dense point cloud (any additional processing, orthophotos or DEMs, is optional).</p>
+
+<ol>
+<li>Export your point cloud (LAS files are good, but it’s up to you)</li>
+<li>Export the calculated/estimated camera positions and orientations
+
+<ul>
+<li>  The key here is that you need:
+
+<ul>
+<li>  The x,y,z coordinates of the cameras in the same reference system as our points</li>
+<li>  The orientation angles of the cameras (pitch, roll, and yaw)</li>
+<li>  Pitch should be 0° = Nadir (straight down), you may need to convert pitch angles if your software uses a different 0° reference.</li>
+<li>  Roll in most software should be 0° = horizontal.</li>
+<li>  Yaw should be a compass angle, 0° = North</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+
+<hr>
+
+<p><a href="#top">Top</a> | <a href="#step-1">SfM Collection and Processing</a> | <a href="#step-2">Point Cloud Processing</a> | <a href="#step-3">Data Prep</a> | <a href="#step-4">Running the Script</a></p>
+
+<hr>
+
+<h2>
+<a id="point-cloud-processing" class="anchor" href="#point-cloud-processing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a id="step-2"></a>Point Cloud Processing</h2>
+
+<p>The instructions in this section use the tools in CloudCompare (CC), so assume that the tool names are for CloudCompare. If you are using a different software, you’ll need to read through and translate the instructions/tools to your specific software. Info on how to use the specific tools in CC can be found on the CloudCompare Wiki (<a href="http://www.cloudcompare.org/doc/wiki/index.php?title=Main_Page">http://www.cloudcompare.org/doc/wiki/index.php?title=Main_Page</a>)</p>
+
+<h3>
+<a id="water-surface-processing" class="anchor" href="#water-surface-processing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Water Surface Processing</h3>
+
+<h4>
+<a id="open-your-point-cloud-in-cloudcompare" class="anchor" href="#open-your-point-cloud-in-cloudcompare" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Open your point cloud in CloudCompare</h4>
+
+<p>If you are prompted to apply coordinate offsets, you should accept the default X and Y, HOWEVER…set the Z offset to zero (it makes the calculations easier)</p>
+
+<h4>
+<a id="import-your-surveys-waters-edge-points-with-the-same-offset-as-the-point-cloud" class="anchor" href="#import-your-surveys-waters-edge-points-with-the-same-offset-as-the-point-cloud" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Import your surveys water’s edge points (with the same offset as the point cloud)</h4>
+
+<ul>
+<li>If you did an extensive survey of the water’s edge you can skip down to the <a href="#mesh">"Create a Delaunay Mesh..."</a> step</li>
+</ul>
+
+<p>Select you point cloud in the DB Tree</p>
+
+<ul>
+<li>Zoom into an area with surveyed water’s edge point as a reference to where the water’s edge appears in the point cloud. The obvious attribute to observe is the color change from dry to wet.</li>
+<li>Select the “Point List Picking” tool, which lets you digitize multiple points
+
+<ul>
+<li>With this tool you can digitize (pick) additional points along the water’s edge. If you make a mistake, you can use the back button on the picking list window.</li>
+<li>For many of my sites, I go crazy picking points every 2-3 meters. You will need a water’s edge points for every part of the stream that you want to have corrected data points.</li>
+<li>For study areas with “infinite” water surfaces (large lakes/ocean), I would suggest creating “synthetic” water’s edge points. These are just additional points with arbitrary X and Y coordinates and Z coordinates that set to the water surface elevation. These points should extend slightly beyond the study area. You can make the points in a text editor or Excel and import them.</li>
+</ul>
+</li>
+<li>Once you are satisfied with the point selections, click the green check mark in the toolbox to save the points as a sub-entity of your point cloud. Select the point cloud and re-open the Point List Picking tool…(The points should reappear in the pinking list)
+
+<ul>
+<li>Click the drop-down arrow by the “Save” icon and select “new cloud”, which will save the points as a separate point cloud in the tree with the name ‘Picking list’</li>
+</ul>
+</li>
+</ul>
+
+<p>Select and merge the new ‘Picking list’ cloud with the surveyed points using the “Merge Multiple Clouds” tool.</p>
+
+<ul>
+<li>Select the new merged point cloud and add the Z values as a new scalar field (SF) attribute 
+
+<ul>
+<li>Tools…Projection…Export coordinates(s) to SF(s)…check ‘Z’…OK</li>
+</ul>
+</li>
+</ul>
+
+<h3>
+<a id="create-a-delaunay-mesh-using-the-merged-edge-points" class="anchor" href="#create-a-delaunay-mesh-using-the-merged-edge-points" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a id="mesh"></a>Create a Delaunay Mesh using the merged edge points</h3>
+
+<p>Select the merged water surface points in the DB Tree.</p>
+
+<p>Select Edit…Mesh…Delaunay 2.5D (XY plane)</p>
+
+<ul>
+<li>Max edge length = your point spacing (2-5m, this limits wild interpolation)</li>
+</ul>
+
+<p>The mesh should appear with colors representing elevation.</p>
+
+<ul>
+<li>  Check the mesh to make sure that there are not anomalous, abrupt changes in elevation along the edges (e.g. color changes).</li>
+<li>  If there are errors, you can edit the points (delete/re-pick) and recreate the mesh.</li>
+</ul>
+
+<h3>
+<a id="subsampling-the-point-cloud" class="anchor" href="#subsampling-the-point-cloud" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Subsampling the point cloud</h3>
+
+<p>In order to limit the influence of noise in the point cloud, we need to subsample the point cloud to a uniform point spacing using a minimum elevation filter. The point spacing will need to be determined by you and the requirements/limitations of the site and your specific research question(s).</p>
+
+<h4>
+<a id="delete-extra-scalar-fields" class="anchor" href="#delete-extra-scalar-fields" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Delete extra scalar fields</h4>
+
+<ul>
+<li>  Select your SfM point cloud in the DB Tree</li>
+<li>  In the ‘Properties’ window, scroll down to the ‘Scalar Field’ section
+
+<ul>
+<li>  If you have extra scalar fields in the point cloud (e.g. Point Source ID or Scan Direction) that are not needed…
+
+<ul>
+<li>  Use the drop-down to select them and press the ‘Delete Current Scalar Field’ button on the toolbar. Repeat for all the fields you do not need.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<h4>
+<a id="with-the-sfm-point-cloud-selected-launch-the-rasterize-tool" class="anchor" href="#with-the-sfm-point-cloud-selected-launch-the-rasterize-tool" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>With the SfM point cloud selected, launch the ‘Rasterize tool’:</h4>
+
+<ol>
+<li> Tools…Projection…Rasterize…</li>
+<li> In the Grid step box, enter the distance between points you want</li>
+<li> Active layer = Height grid values</li>
+<li> Projection, direction = Z</li>
+<li> Cell height = minimum height</li>
+<li> No checks in ‘interpolate SF’ or ‘resample input cloud’</li>
+<li> Empty Cells, Fill with = leave empty</li>
+<li><p>Click the ‘Update Grid’ button at the top</p></li>
+</ol>
+
+<ul>
+<li>At the bottom, select the ‘Export tab’
+
+<ul>
+<li>In the Export per-cell statistics section, I would recommend you check all the boxes. This will export the statistics for each point and may be useful in doing a final error analysis (e.g correction error vs. roughness (std. dev.))</li>
+</ul>
+</li>
+<li> Click the ‘Cloud button’ to export the resampled points as a new point cloud</li>
+</ul>
+
+<p>The new cloud will appear in the DB Tree with the suffix *- Cloud.raster(#), where # is the spacing you specified.</p>
+
+<h3>
+<a id="transferring-attributes-to-the-subsampled-point-cloud" class="anchor" href="#transferring-attributes-to-the-subsampled-point-cloud" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Transferring attributes to the subsampled point cloud</h3>
+
+<p>Select your new subsampled point cloud in the DB Tree...</p>
+
+<h4>
+<a id="calculate-the-point-to-mesh-distances" class="anchor" href="#calculate-the-point-to-mesh-distances" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Calculate the point-to-mesh distances</h4>
+
+<p>Select both the subsampled point cloud and the water surface mesh</p>
+
+<ul>
+<li>  On the toolbar click ‘Calculate point/mesh distance’ OR Tools…Distances…Point/Mesh Dist
+
+<ul>
+<li>  Leave the options on the default</li>
+</ul>
+</li>
+<li>  This will add a new scalar field to the point cloud called ‘C2M Signed Distance’ which represents the “depth” of the points below the water surface</li>
+</ul>
+
+<h4>
+<a id="filtering-the-underwater-points" class="anchor" href="#filtering-the-underwater-points" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Filtering the “underwater” points</h4>
+
+<p>Select the subsampled point cloud  </p>
+
+<p>Click the ‘Filter points by value’ tool on the toolbar</p>
+
+<ul>
+<li>  Change the Min value to the max depth for your area (round up to a whole number)</li>
+<li>  Change the Max value to zero</li>
+<li>  Click OK</li>
+</ul>
+
+<p>The underwater points will be extracted to a new cloud with a suffix *- Cloud.extract</p>
+
+<ul>
+<li>  The edges outside the water surface mesh will likely be included in the extract
+
+<ul>
+<li>  Use the editing tools to delete these edges, cropped to just inside the water surface mesh.</li>
+</ul>
+</li>
+</ul>
+
+<h4>
+<a id="convert-depth-to-water-surface-elevation" class="anchor" href="#convert-depth-to-water-surface-elevation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Convert depth to water surface elevation</h4>
+
+<p>With the extracted point cloud selected, click the Calculator icon on the toolbar (“Add, subtract, multiply, or divide two scalar fields”)</p>
+
+<ul>
+<li>  Set SF 1 = Coord. Z</li>
+<li>  Set operation = minus</li>
+<li>  Set Sf 2 = Height grid values</li>
+<li>  Uncheck ‘Update SF1 directly’</li>
+<li>  …OK</li>
+</ul>
+
+<p>This subtracts the negative depth value from (adding it to) the SfM elevation value to give the water surface elevation for each point.</p>
+
+<h4>
+<a id="rename-scalar-fields" class="anchor" href="#rename-scalar-fields" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Rename scalar fields</h4>
+
+<p>In the properties window…change the active SF to ‘C2M Signed Distances’ and delete this field</p>
+
+<ul>
+<li>  Switch to Height grid value, and rename it to <code>sfm_z</code>
+
+<ul>
+<li>  Edit…Scalar fields…Rename…[name]…OK</li>
+</ul>
+</li>
+<li>Switch to (SF# - SF#), and rename it to <code>w_surf</code>
+</li>
+</ul>
+
+<h4>
+<a id="export-the-point-cloud" class="anchor" href="#export-the-point-cloud" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Export the point cloud</h4>
+
+<p>Select the edited point cloud</p>
+
+<ul>
+<li>  File…Save...
+
+<ul>
+<li>  Choose your file path</li>
+<li>  File name = [your_file_name].csv</li>
+<li>  Save as type = ‘ASCII cloud’</li>
+</ul>
+</li>
+</ul>
+
+<h4>
+<a id="optionalrecommendedsave-all-of-the-processing-data" class="anchor" href="#optionalrecommendedsave-all-of-the-processing-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Optional/Recommended…Save all of the processing data</h4>
+
+<p>Click in the DB Tree and select all (Ctrl+A)</p>
+
+<ul>
+<li>  File…Save...
+
+<ul>
+<li>  Choose your file path</li>
+<li>  File name = [name]</li>
+<li>  Save as type = ‘CloudCompare entities (*.bin)’</li>
+</ul>
+</li>
+</ul>
+
+<hr>
+
+<p><a href="#top">Top</a> | <a href="#step-1">SfM Collection and Processing</a> | <a href="#step-2">Point Cloud Processing</a> | <a href="#step-3">Data Prep</a> | <a href="#step-4">Running the Script</a></p>
+
+<hr>
+
+<h2>
+<a id="data-prep" class="anchor" href="#data-prep" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a id="step-3"></a>Data Prep</h2>
+
+<p>The inputs for the Python script are the edited point cloud, the camera location/orientations, and a file with camera sensor parameters. These all need to be comma-delimited (*.csv) files. You will need open all of the files in a text editor or Excel to double-check the header names (they are case-sensitive). There are examples included in the "Sample Data" folder in the Git repository.</p>
+
+<h4>
+<a id="point-cloud" class="anchor" href="#point-cloud" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Point cloud</h4>
+
+<ul>
+<li>  The required columns/headers are <code>x,y,sfm_z,w_surf</code>
+</li>
+<li>  Any extra columns like color [r,g,b] will be copied to the output point cloud without any modification.</li>
+<li>  If you followed the instructions above, you will have an extra column named ‘z’ in the point cloud, you can delete it if you like. It is the same as the ‘sfm_z’ column.</li>
+</ul>
+
+<h4>
+<a id="camera-positions" class="anchor" href="#camera-positions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Camera positions</h4>
+
+<ul>
+<li>  The required columns/headers are <code>x,y,z,pitch,roll,yaw</code>
+</li>
+<li>  Camera/photo names can be included, but are not required</li>
+</ul>
+
+<h4>
+<a id="sensor-properties" class="anchor" href="#sensor-properties" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sensor properties</h4>
+
+<ul>
+<li>  The required columns/headers are <code>focal,sensor_x,sensor_y</code>
+</li>
+<li>  Focal is the focal length of the camera in millimeters</li>
+<li>  sensor_x &amp; sensor_y are the physical sensor dimensions in millimeters
+
+<ul>
+<li>  You may have to dig around the internet to find these values if they are not listed with the technical specifications of the camera.</li>
+</ul>
+</li>
+</ul>
+
+<hr>
+
+<p><a href="#top">Top</a> | <a href="#step-1">SfM Collection and Processing</a> | <a href="#step-2">Point Cloud Processing</a> | <a href="#step-3">Data Prep</a> | <a href="#step-4">Running the Script</a></p>
+
+<hr>
+
+<h2>
+<a id="running-the-script" class="anchor" href="#running-the-script" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a id="step-4"></a>Running the script</h2>
+
+<blockquote>
+<p>A quick note, there is very little error checking/handling in the
+first version of this script. Most of the errors that are likely to occur will be
+because of incorrect header names in the CSV files, double check them
+against the sample data files. If the output is empty or looks weird,
+double check that the camera orientation values are in the correct
+directions and that the point cloud has correct water surface
+elevations.</p>
+</blockquote>
+
+<p>Download the Git repository</p>
+
+<ul>
+<li>  Unzip and files into a convenient spot (near your exported data is always a good choice)</li>
+</ul>
+
+<p>Launch the script</p>
+
+<ul>
+<li>  If you are using Anaconda:
+
+<ul>
+<li>  Open the Spyder editor</li>
+<li>  Load the python file from (py_sfm_depth_v1_0.py)</li>
+<li>  Run the script with the green “Play” button on the toolbar (no editing required)</li>
+</ul>
+</li>
+<li>  If you want to use the command line:
+
+<ul>
+<li>  Open your command line/terminal program of choice</li>
+<li>  Change your directory to the place you unzipped the files</li>
+<li>  Execute the script with: <code>python py_sfm_depth_v1-0.py</code>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Load files</p>
+
+<ul>
+<li>  The first window that pops up will ask for the point cloud (i.e. the one you exported from CloudCompare).
+
+<ul>
+<li>  Navigate to the directory and select the file (the subsequent windows will return to this directory)</li>
+</ul>
+</li>
+<li>  Second is the camera position/orientation file.</li>
+<li>  Third is the sensor file.</li>
+<li>  Forth is the output file. I use something like <code>siteName_CORRECTED.csv</code>
+
+<ul>
+<li>  If the output file window pops back up, there is already a file with that name and you’ll need to choose another name.</li>
+</ul>
+</li>
+</ul>
+
+<p>The script will start…</p>
+
+<ul>
+<li>  Processing the camera's instantaneous fields of view first.</li>
+<li>  Then processing point in batches of 7,500.</li>
+</ul>
+
+<p>When the script is finished, it will report how many points were processed and approximately how long it took. You can exit the editor or terminal.</p>
+
+<h3>
+<a id="examining-the-results" class="anchor" href="#examining-the-results" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examining the results</h3>
+
+<p>Open the output file in CloudCompare</p>
+
+<ul>
+<li>  The ‘Open ASCII File’ import window will open</li>
+<li>  The header names will be in the first line, note the column number of ‘corElev_avg’</li>
+<li>  At the bottom, separator is comma(,) and skip line = 1 and check ‘extract scalar fields from first line’
+
+<ul>
+<li>  CC will try to make the third column ‘coord Z’. With the drop downs, reassign ‘coord Z’ to the ‘corElev_avg’ column</li>
+</ul>
+</li>
+<li>  If you have extra columns…
+
+<ul>
+<li>  You can set RGB columns, if they are not automatically interpreted</li>
+<li>  Make sure none of the columns are interpreted as <code>Nx,Ny,Nz</code>. These are the “normal” directions (the surface orientation of the point). Change these columns to “Scalar”. (That is, unless you do have normal stored as part of the point cloud, but you will most likely not have these fields).</li>
+</ul>
+</li>
+</ul>
+
+<p>The cloud should be shown in the viewer. You can change the scalar field to ‘h,avg’ to display depth, or change the colors to RGB (if you have them in your data).</p>
+
+<h4>
+<a id="and-thats-your-data-corrected-for-refraction-i-would-suggest-doing-some-error-analysis-before-going-too-far-but-thats-a-topic-for-another-tutorial" class="anchor" href="#and-thats-your-data-corrected-for-refraction-i-would-suggest-doing-some-error-analysis-before-going-too-far-but-thats-a-topic-for-another-tutorial" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>And that’s your data corrected for refraction. I would suggest doing some error analysis before going too far, but that’s a topic for another tutorial…</h4>
+
+<hr>
+
+<p><a href="#top">Top</a> | <a href="#step-1">SfM Collection and Processing</a> | <a href="#step-2">Point Cloud Processing</a> | <a href="#step-3">Data Prep</a> | <a href="#step-4">Running the Script</a></p>
+
+<hr>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/geojames/py_sfm_depth">py sfm  depth</a> is maintained by <a href="https://github.com/geojames">geojames</a>.</span>
