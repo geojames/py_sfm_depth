@@ -5,6 +5,8 @@
 UPDATE - Sept 27, 2016
 > The academic article supporting the release of this software has been accepted (Earth Surface Processes and Landforms).
 
+Dietrich, J.T. 2016.  Bathymetric Structure from Motion: Extracting stream bathymetry from multi-view stereo photogrammetry. Earth Surface Processes and Landforms. DOI: 10.1002/esp.4060 ([LINK](http://onlinelibrary.wiley.com/doi/10.1002/esp.4060/full))
+
 A tutorial is availible from [the github.io page for this repository](https://geojames.github.io/py_sfm_depth/)
 
 There are currently two versions of the script:
