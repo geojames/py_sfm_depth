@@ -13,4 +13,4 @@ There are currently two versions of the script:
 >      *wx is not in most scientific python distrobutions
 
 >v1.1 - is for Python 3.5 and only requires: tkinter, numpy, pandas, sympy, matplotlib
->     which are included in most of the scientific python distrobutions
+>     which are included in most of the scientific python distrobutions (I use Anaconda)
