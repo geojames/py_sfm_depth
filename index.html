@@ -335,12 +335,12 @@
 <h4>
 <a id="convert-depth-to-water-surface-elevation" class="anchor" href="#convert-depth-to-water-surface-elevation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Convert depth to water surface elevation</h4>
 
-<p>With the extracted point cloud selected, click the Calculator icon on the toolbar (“Add, subtract, multiply, or divide two scalar fields”)</p>
+<p>With the extracted point cloud selected, click the Calculator icon on the toolbar (“Add, subtract, multiply, or divide two scalar fields”). Here we will add the calculated depth back to the elevations to get the water surface elevation.</p>
 
 <ul>
 <li>  Set SF 1 = Coord. Z</li>
 <li>  Set operation = minus</li>
-<li>  Set Sf 2 = Height grid values</li>
+<li>  Set Sf 2 = C2M Signed Distances</li>
 <li>  Uncheck ‘Update SF1 directly’</li>
 <li>  …OK</li>
 </ul>
