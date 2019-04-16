@@ -1,5 +1,7 @@
 # Welcome to py_sfm_depth
 
+**This project has been superseeded by [pyBathySfM](https://github.com/geojames/pyBathySfM)**
+
 ###### This python script is designed to perform an iteritive, multi-camera refraction correction on Structure from Motion point clouds
 ---
 IF you use this software for research, please be sure to site the following article
